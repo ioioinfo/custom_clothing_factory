@@ -42,8 +42,9 @@ exports.register = function(server, options, next) {
                 }
                 
                 var org_code = "ioio";
+                var platform_code = "custom_clothing";
                 
-                server.plugins.services.auth.login_by_barcode(org_code,barcode,function(err,content) {
+                server.plugins.services.auth.login_by_barcode(org_code,platform_code,barcode,function(err,content) {
                     if (err) {
                         return reply({"success":false,"message":"error"});
                     }
@@ -52,7 +53,47 @@ exports.register = function(server, options, next) {
                         return reply({"success":false,"message":content.message});
                     }
                     
-                    return reply({"success":true,"message":"ok","row":content.row});
+                    //人员信息
+                    var row = content.row;
+                    
+                    if (!row) {
+                        return reply({"success":false,"message":"person not found"});
+                    }
+                    
+                    var person_id = row.person_id;
+                    
+                    var ep = eventproxy.create("person","workflow_roles","avatar",function(person,workflow_roles,avatar) {
+                        return reply({"success":true,"message":"ok","person":person,"workflow_roles":workflow_roles,"avatar":avatar});
+                    });
+                    
+                    //查询人员信息
+                    server.plugins.services.person.get_by_id(person_id,function(err,content) {
+                        if (err) {
+                            ep.emit("person",null);
+                        } else {
+                            ep.emit("person",content.row);
+                        }
+                    });
+                    
+                    //查询流程权限
+                    server.plugins.services.auth.get_person_workflow_role(org_code,person_id,function(err,content) {
+                        if (err) {
+                            ep.emit("workflow_roles",null);
+                        } else {
+                            ep.emit("workflow_roles",content.rows);
+                        }
+                    });
+                    
+                    //查询人员头像
+                    var person_ids = JSON.stringify([person_id]);
+                    
+                    server.plugins.services.person.get_avatar(person_ids,function(err,content) {
+                        if (err || content.rows.length == 0) {
+                            ep.emit("avatar",null);
+                        } else {
+                            ep.emit("avatar",content.rows[0]);
+                        }
+                    });
                 });
             }
         },

@@ -38,6 +38,21 @@ var nav = function(server) {
                 }
             });
         },
+        
+        get_by_id: function(person_id,cb) {
+            var url = host + "person/get_by_id?person_id=" + person_id;
+            uu_request.do_get_method(url, function(err, content) {
+                cb(err,content);
+            });
+        },
+        
+        //查询人员头像
+        get_avatar: function(person_ids,cb) {
+            var url = host + "person/get_avatar?scope_code=ioio&person_ids=" + person_ids;
+            uu_request.do_get_method(url, function(err, content) {
+                cb(err,content);
+            });
+        },
 
         //保存用户信息
         save_person: function(username,person_name,mobile,data_source,cb) {
