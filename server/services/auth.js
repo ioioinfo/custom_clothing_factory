@@ -28,12 +28,8 @@ var nav = function(server) {
             var url = host + "user/login_by_barcode";
             var data = {org_code:org_code,login_code:barcode};
 
-            uu_request.request(url, data, function(err, response, body) {
-                if (!err && response.statusCode === 200) {
-                    cb(err,body);
-                } else {
-                    cb(true,{message:"网络错误"});
-                }
+            uu_request.do_post_method(url, data, function(err, content) {
+                cb(err,content);
             });
         },
     };
