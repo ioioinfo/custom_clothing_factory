@@ -14,21 +14,29 @@
 */
 
 'use strict';
-exports.register = function(server, options, next){
 
-    var load_module = function(key, path) {
-        var module = require(path)(server);
-        if (typeof module.init === 'function') { module.init(); }
-        if (typeof module.refresh === 'function') { module.refresh(); }
-        server.expose(key, module);
+var _ = require('lodash');
+var eventproxy = require('eventproxy');
+const util = require('util');
+const uu_request = require('../utils/uu_request');
+
+var host = "http://211.149.248.241:18666/";
+
+var nav = function(server) {
+    return {
+        login_by_barcode: function(org_code, barcode,cb) {
+            var url = host + "user/login_by_barcode";
+            var data = {org_code:org_code,login_code:barcode};
+
+            uu_request.request(url, data, function(err, response, body) {
+                if (!err && response.statusCode === 200) {
+                    cb(err,body);
+                } else {
+                    cb(true,{message:"网络错误"});
+                }
+            });
+        },
     };
-
-    load_module('auth', './auth');
-    load_module('person', './person.js');
-  
-    next();
-}
-
-exports.register.attributes = {
-    name: 'services'
 };
+
+module.exports = nav;

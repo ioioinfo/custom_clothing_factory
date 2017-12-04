@@ -57,6 +57,8 @@ server.register([
     }, {
         register: require('./server/controller/index_controller.js')
     }, {
+        register: require('./server/controller/auth_controller.js')
+    }, {
         register: require('./server/controller/person_controller.js')
     },
 
